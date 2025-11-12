@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "rag-server": {
+      "command": "/Users/YourUsername/.local/bin/uv",
+      "args": [
+        "run",
+        "python",
+        "-m",
+        "rag_server.rag_mcp_chroma"
+      ],
+      "cwd": "/Users/YourUsername/Projects/personal-mcp-server",
+      "env": {}
+    }
+  }
+}
