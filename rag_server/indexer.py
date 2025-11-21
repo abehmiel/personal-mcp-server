@@ -224,6 +224,46 @@ class CodebaseIndexer:
                 sha256.update(chunk)
         return sha256.hexdigest()
 
+    def _create_chunk_id(
+        self,
+        file_path: Path,
+        root_directory: Path,
+        file_hash: str,
+        chunk_index: int,
+    ) -> str:
+        """
+        Create a human-readable, unique chunk ID.
+
+        The ID includes the relative file path (for readability and debugging)
+        and a short content hash (for tracking duplicate files).
+
+        Args:
+            file_path: Full path to the file
+            root_directory: Root directory being indexed
+            file_hash: SHA256 hash of the file content
+            chunk_index: Index of the chunk within the file
+
+        Returns:
+            str: A unique, readable chunk ID
+                Format: "relative/path/to/file.ext#hash8#chunk_N"
+                Example: "notebooks/demo/README.md#4928251e#chunk_0"
+        """
+        # Compute relative path from root directory
+        try:
+            rel_path = file_path.relative_to(root_directory)
+        except ValueError:
+            # If file is outside root (shouldn't happen), use absolute path
+            rel_path = file_path
+
+        # Use forward slashes for consistency across platforms
+        path_str = str(rel_path).replace("\\", "/")
+
+        # Include first 8 chars of content hash for deduplication tracking
+        hash_prefix = file_hash[:8]
+
+        # Create readable ID: path#hash#chunk_index
+        return f"{path_str}#{hash_prefix}#chunk_{chunk_index}"
+
     def _read_file_with_hash(self, file_path: Path) -> tuple[str | None, str]:
         """
         Read file content and compute hash in one pass for efficiency.
@@ -349,6 +389,7 @@ class CodebaseIndexer:
             files=files,
             collection=collection,
             collection_name=collection_name,
+            root_directory=directory_path,
         )
 
         logger.info(
@@ -363,6 +404,7 @@ class CodebaseIndexer:
         files: list[Path],
         collection: Any,
         collection_name: str,
+        root_directory: Path,
     ) -> IndexingResult:
         """
         Index a list of files into a collection.
@@ -371,6 +413,7 @@ class CodebaseIndexer:
             files: List of file paths
             collection: ChromaDB collection
             collection_name: Name of the collection
+            root_directory: Root directory being indexed (for computing relative paths)
 
         Returns:
             IndexingResult: Result of indexing
@@ -446,8 +489,13 @@ class CodebaseIndexer:
 
                     # Add chunks to batch
                     for chunk in chunks:
-                        # Create unique ID for chunk
-                        chunk_id = f"{file_hash}_{chunk.metadata.chunk_index}"
+                        # Create human-readable chunk ID with file path and content hash
+                        chunk_id = self._create_chunk_id(
+                            file_path=file_path,
+                            root_directory=root_directory,
+                            file_hash=file_hash,
+                            chunk_index=chunk.metadata.chunk_index,
+                        )
 
                         # Prepare metadata (flatten for ChromaDB)
                         chunk_metadata = {

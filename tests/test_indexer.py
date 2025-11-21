@@ -176,6 +176,45 @@ class TestCodebaseIndexer:
         hash3 = indexer._compute_file_hash(test_file)
         assert hash1 != hash3
 
+    def test_create_chunk_id(self, temp_dir: Path) -> None:
+        """Test chunk ID generation with readable file paths."""
+        indexer = CodebaseIndexer(db_path=temp_dir / "db")
+
+        root_dir = temp_dir / "project"
+        root_dir.mkdir()
+
+        # Create two files with same content (simulating duplicates)
+        file1 = root_dir / "src" / "module1.py"
+        file1.parent.mkdir(parents=True)
+        file1.write_text("print('hello')")
+
+        file2 = root_dir / "tests" / "test_module1.py"
+        file2.parent.mkdir(parents=True)
+        file2.write_text("print('hello')")
+
+        # Compute hashes (should be identical)
+        hash1 = indexer._compute_file_hash(file1)
+        hash2 = indexer._compute_file_hash(file2)
+        assert hash1 == hash2, "Files with same content should have same hash"
+
+        # Generate chunk IDs
+        chunk_id1 = indexer._create_chunk_id(file1, root_dir, hash1, 0)
+        chunk_id2 = indexer._create_chunk_id(file2, root_dir, hash2, 0)
+
+        # IDs should be different (different paths) but include same content hash
+        assert chunk_id1 != chunk_id2, "Files at different paths should have different IDs"
+        assert "src/module1.py" in chunk_id1, "ID should include file path"
+        assert "tests/test_module1.py" in chunk_id2, "ID should include file path"
+        assert hash1[:8] in chunk_id1, "ID should include content hash"
+        assert hash2[:8] in chunk_id2, "ID should include content hash"
+        assert "chunk_0" in chunk_id1, "ID should include chunk index"
+        assert "chunk_0" in chunk_id2, "ID should include chunk index"
+
+        # Test chunk index changes
+        chunk_id1_1 = indexer._create_chunk_id(file1, root_dir, hash1, 1)
+        assert chunk_id1_1 != chunk_id1, "Different chunk indices should produce different IDs"
+        assert "chunk_1" in chunk_id1_1, "ID should reflect correct chunk index"
+
     @pytest.mark.slow
     def test_index_directory(self, sample_codebase: Path, temp_dir: Path) -> None:
         """Test indexing a directory."""
