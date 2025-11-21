@@ -168,11 +168,9 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-    "--cov=rag_server",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
 ]
+# Coverage flags moved to separate make target to avoid file descriptor exhaustion
+# Use 'make coverage' instead of 'make test' for coverage reports
 filterwarnings = [
     "error",
     "ignore::DeprecationWarning",
@@ -187,6 +185,10 @@ markers = [
 # Coverage Configuration
 [tool.coverage.run]
 source = ["rag_server"]
+data_file = ".coverage"
+# Explicitly configure parallel mode for subprocess coverage
+parallel = true
+concurrency = ["thread", "multiprocessing"]
 omit = [
     "*/tests/*",
     "*/__pycache__/*",

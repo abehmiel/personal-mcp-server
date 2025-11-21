@@ -241,10 +241,14 @@ def search(ctx: click.Context, query: str, collection: str, limit: int) -> None:
         )
 
         # Get collection
-        coll = indexer.client.get_collection(
-            name=collection,
-            embedding_function=indexer.embedding_fn,  # type: ignore[arg-type]
-        )
+        try:
+            coll = indexer.client.get_collection(
+                name=collection,
+                embedding_function=indexer.embedding_fn,  # type: ignore[arg-type]
+            )
+        except Exception:
+            console.print(f"[yellow]Collection '{collection}' not found.[/yellow]")
+            return
 
         # Search
         results = coll.query(

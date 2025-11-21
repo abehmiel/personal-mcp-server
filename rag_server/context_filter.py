@@ -202,12 +202,15 @@ class ContextFilter:
             bool: True if the path should be ignored
         """
         try:
-            # Get relative path from root without expensive resolve()
-            # resolve() is expensive because it resolves symlinks and canonicalizes
-            if path.is_absolute():
-                rel_path = path.relative_to(self.root_path)
+            # Resolve the path to handle symlinks (e.g., /var -> /private/var on macOS)
+            # This ensures relative_to() works correctly when root_path was resolved in __init__
+            resolved_path = path.resolve() if path.is_absolute() else path
+
+            # Get relative path from root
+            if resolved_path.is_absolute():
+                rel_path = resolved_path.relative_to(self.root_path)
             else:
-                rel_path = path
+                rel_path = resolved_path
 
             rel_path_str = str(rel_path)
 
@@ -216,7 +219,7 @@ class ContextFilter:
                 return True
 
             # Also check if it's a directory and should be ignored
-            if path.is_dir() and self.spec.match_file(f"{rel_path_str}/"):
+            if resolved_path.is_dir() and self.spec.match_file(f"{rel_path_str}/"):
                 return True
 
             return False

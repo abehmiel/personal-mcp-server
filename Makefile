@@ -91,9 +91,9 @@ inspector: ## Start server and run it in web browser inspector mode over npx
 
 ##@ Testing
 
-test: ## Run all tests
-	@echo "$(BLUE)Running all tests...$(NC)"
-	@$(PYTHON) -m pytest
+test: ## Run all tests (fast, no coverage)
+	@echo "$(BLUE)Running all tests (no coverage)...$(NC)"
+	@$(PYTHON) -m pytest -v
 
 test-fast: ## Run tests excluding slow ones
 	@echo "$(BLUE)Running fast tests (excluding slow)...$(NC)"
@@ -107,7 +107,7 @@ test-integration: ## Run only integration tests
 	@echo "$(BLUE)Running integration tests...$(NC)"
 	@$(PYTHON) -m pytest -m "integration"
 
-coverage: ## Run tests with coverage report
+coverage: clean-coverage increase-fd-limit ## Run tests with coverage report
 	@echo "$(BLUE)Running tests with coverage...$(NC)"
 	@$(PYTHON) -m pytest --cov=rag_server --cov-report=term-missing --cov-report=html --cov-report=xml
 	@echo ""
@@ -115,6 +115,17 @@ coverage: ## Run tests with coverage report
 	@echo "  - Terminal: see above"
 	@echo "  - HTML: open htmlcov/index.html"
 	@echo "  - XML: coverage.xml"
+
+increase-fd-limit: ## Increase file descriptor limit for current shell
+	@echo "$(BLUE)Checking file descriptor limit...$(NC)"
+	@current=$$(ulimit -n); \
+	if [ $$current -lt 4096 ]; then \
+		echo "$(YELLOW)Current limit: $$current (too low)$(NC)"; \
+		echo "$(BLUE)Increasing to 4096...$(NC)"; \
+		ulimit -n 4096 2>/dev/null || echo "$(YELLOW)Could not increase limit (requires sudo or system config)$(NC)"; \
+	else \
+		echo "$(GREEN)Current limit: $$current (sufficient)$(NC)"; \
+	fi
 
 ##@ RAG Operations
 
@@ -261,19 +272,24 @@ config-show: ## Show current Claude Desktop configuration
 
 ##@ Utilities
 
-clean: ## Clean temporary files, caches, and build artifacts
+clean: ## Clean temporary files, caches, and build artifacts (does NOT delete chroma_db)
 	@echo "$(BLUE)Cleaning temporary files...$(NC)"
 	@rm -rf .pytest_cache
 	@rm -rf .mypy_cache
 	@rm -rf .ruff_cache
 	@rm -rf htmlcov
-	@rm -rf .coverage coverage.xml
+	@rm -rf .coverage* coverage.xml
 	@rm -rf dist build *.egg-info
 	@rm -rf **/__pycache__
 	@rm -rf **/*.pyc
 	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
 	@echo "$(GREEN)Cleanup complete$(NC)"
+
+clean-coverage: ## Clean ONLY coverage files
+	@echo "$(BLUE)Cleaning coverage files...$(NC)"
+	@rm -rf .coverage .coverage.* htmlcov coverage.xml
+	@echo "$(GREEN)Coverage files cleaned$(NC)"
 
 clean-db: ## Clean ChromaDB data (WARNING: deletes all collections)
 	@echo "$(RED)Warning: This will delete ALL indexed data$(NC)"
