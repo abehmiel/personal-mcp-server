@@ -11,6 +11,8 @@ from typing import Any
 
 from chromadb.utils import embedding_functions
 
+from .config import DEFAULT_EMBEDDING_MODEL
+
 logger = logging.getLogger(__name__)
 
 
@@ -33,7 +35,7 @@ class EmbeddingFunctionCache:
 
     def get_embedding_function(
         self,
-        model_name: str = "all-MiniLM-L6-v2",
+        model_name: str | None = None,
     ) -> Any:
         """
         Get or create an embedding function.
@@ -44,6 +46,9 @@ class EmbeddingFunctionCache:
         Returns:
             Embedding function instance (cached if exists)
         """
+        if model_name is None:
+            model_name = DEFAULT_EMBEDDING_MODEL
+
         if model_name not in self._cache:
             logger.info(f"Loading embedding model: {model_name}")
             self._cache[model_name] = (
@@ -84,7 +89,7 @@ class EmbeddingFunctionCache:
 _embedding_cache = EmbeddingFunctionCache()
 
 
-def get_embedding_function(model_name: str = "all-MiniLM-L6-v2") -> Any:
+def get_embedding_function(model_name: str | None = None) -> Any:
     """
     Get a cached embedding function.
 
@@ -92,7 +97,8 @@ def get_embedding_function(model_name: str = "all-MiniLM-L6-v2") -> Any:
     It ensures only one instance of each model exists in memory.
 
     Args:
-        model_name: Name of the sentence transformer model
+        model_name: Name of the sentence transformer model.
+            If None, uses the default from config.
 
     Returns:
         Cached embedding function instance

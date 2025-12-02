@@ -15,6 +15,7 @@ import chromadb
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
 from .chunking import ChunkingStrategy, get_chunker
+from .config import DEFAULT_DB_PATH, DEFAULT_EMBEDDING_MODEL
 from .context_filter import ContextFilter
 from .embedding_cache import get_embedding_function
 from .errors import ChromaDBError
@@ -65,8 +66,8 @@ class CodebaseIndexer:
 
     def __init__(
         self,
-        db_path: str | Path = "./chroma_db",
-        embedding_model: str = "all-MiniLM-L6-v2",
+        db_path: str | Path = DEFAULT_DB_PATH,
+        embedding_model: str = DEFAULT_EMBEDDING_MODEL,
         config: IndexingConfig | None = None,
     ) -> None:
         """
