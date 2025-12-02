@@ -22,6 +22,7 @@ class EmbeddingConfig:
         - "BAAI/bge-small-en-v1.5": Excellent quality, fast (384 dims, ~130MB)
         - "BAAI/bge-base-en-v1.5": Better quality, moderate speed (768 dims, ~440MB)
         - "BAAI/bge-large-en-v1.5": Best quality, slowest (1024 dims, ~1.3GB)
+        - "MongoDB/mdbr-leaf-ir": High quality, slowest (1024 dims, ~1.3GB)
         - "nomic-ai/nomic-embed-text-v1.5": Strong performance (768 dims, ~550MB)
         - "intfloat/e5-small-v2": Efficient, good quality (384 dims, ~130MB)
         - "intfloat/e5-base-v2": High quality (768 dims, ~420MB)
