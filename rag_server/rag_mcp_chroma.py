@@ -22,6 +22,7 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 
 # Import from our local package - use relative imports to avoid conflicts
+from .config import DEFAULT_DB_PATH, DEFAULT_EMBEDDING_MODEL, DEFAULT_SERVER_NAME
 from .embedding_cache import get_embedding_function
 from .errors import (
     ChromaDBError,
@@ -46,9 +47,9 @@ class RAGMCPServer:
 
     def __init__(
         self,
-        db_path: str = "./chroma_db",
-        embedding_model: str = "all-MiniLM-L6-v2",
-        server_name: str = "personal-rag-server",
+        db_path: str = DEFAULT_DB_PATH,
+        embedding_model: str = DEFAULT_EMBEDDING_MODEL,
+        server_name: str = DEFAULT_SERVER_NAME,
     ) -> None:
         """
         Initialize the RAG MCP server.

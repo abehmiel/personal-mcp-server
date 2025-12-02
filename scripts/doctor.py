@@ -16,6 +16,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+# Add parent directory to path so we can import rag_server
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from rag_server.config import DEFAULT_EMBEDDING_MODEL
+
 console = Console()
 
 
@@ -157,6 +161,21 @@ class SystemDoctor:
 
         self.add_check("ChromaDB", passed, message)
 
+    def check_embedding_model(self) -> None:
+        """Check embedding model configuration."""
+        try:
+            # Verify sentence_transformers is available
+            import sentence_transformers  # noqa: F401
+
+            model_name = DEFAULT_EMBEDDING_MODEL
+            passed = True
+            message = f"Configured: {model_name}"
+
+            self.add_check("Embedding Model", passed, message)
+
+        except ImportError:
+            self.add_check("Embedding Model", False, "sentence_transformers not installed")
+
     def check_cli_command(self) -> None:
         """Check if CLI command is available."""
         try:
@@ -240,6 +259,7 @@ class SystemDoctor:
         self.check_dependencies()
         self.check_torch_backend()
         self.check_chromadb()
+        self.check_embedding_model()
         self.check_cli_command()
         self.check_tests()
 

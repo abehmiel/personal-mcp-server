@@ -7,6 +7,14 @@ with Retrieval-Augmented Generation (RAG) capabilities using ChromaDB.
 
 __version__ = "0.1.0"
 
+from .config import (
+    DEFAULT_DB_PATH,
+    DEFAULT_EMBEDDING_MODEL,
+    DEFAULT_SERVER_NAME,
+    EmbeddingConfig,
+    ServerConfig,
+    get_default_config,
+)
 from .embedding_cache import clear_embedding_cache, get_cache_info, get_embedding_function
 from .errors import (
     ChromaDBError,
@@ -29,14 +37,19 @@ from .utils import (
 )
 
 __all__ = [
+    "DEFAULT_DB_PATH",
+    "DEFAULT_EMBEDDING_MODEL",
+    "DEFAULT_SERVER_NAME",
     "ChromaDBError",
     "CollectionNotFoundError",
     "DeviceConfigurationError",
     "DeviceType",
     "DocumentValidationError",
+    "EmbeddingConfig",
     "EmbeddingError",
     "MCPServerError",
     "PlatformInfo",
+    "ServerConfig",
     "ServerInitializationError",
     "ToolExecutionError",
     "__version__",
@@ -44,6 +57,7 @@ __all__ = [
     "configure_torch_device",
     "detect_device",
     "get_cache_info",
+    "get_default_config",
     "get_device_memory_info",
     "get_embedding_function",
     "get_logger",
